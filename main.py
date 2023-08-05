@@ -1,10 +1,11 @@
 import os
 import sys
 import logging
-from typing import Union
 from fastapi import FastAPI, HTTPException, status, Request
 from fastapi.responses import JSONResponse
 from loguru import logger
+from typing import Union
+
 
 LOG_LEVEL = logging.getLevelName(os.environ.get("LOG_LEVEL", "DEBUG"))
 
@@ -29,6 +30,12 @@ class InterceptHandler(logging.Handler):
 
 
 app = FastAPI()
+
+ENABLE_METRICS = os.environ.get("ENABLE_METRICS", "false").lower() == "true"
+if ENABLE_METRICS:
+    from prometheus_fastapi_instrumentator import Instrumentator
+
+    Instrumentator().instrument(app).expose(app)
 
 
 @app.get("/")
