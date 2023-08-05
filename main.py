@@ -2,7 +2,8 @@ import os
 import sys
 import logging
 from typing import Union
-from fastapi import FastAPI, HTTPException
+from fastapi import FastAPI, HTTPException, status, Request
+from fastapi.responses import JSONResponse
 from loguru import logger
 
 LOG_LEVEL = logging.getLevelName(os.environ.get("LOG_LEVEL", "DEBUG"))
@@ -56,6 +57,15 @@ def error_test_forbidden():
     raise HTTPException(status_code=403, detail="Forbidden")
 
 
+@app.exception_handler(status.HTTP_404_NOT_FOUND)
+async def not_found_exception_handler(request: Request, _exc):
+    app.logger.error(f"Endpoint `{request.url}` Not Found.")
+    return JSONResponse(
+        status_code=status.HTTP_404_NOT_FOUND,
+        content={"message": "Not Found"},
+    )
+
+
 @app.on_event("startup")
 async def startup_event():
     intercept_handler = InterceptHandler()
@@ -75,5 +85,6 @@ async def startup_event():
             seen.add(name)
             logging.getLogger(name).handlers = [intercept_handler]
 
+    logging.getLogger("uvicorn").handlers.clear()
     logger.configure(handlers=[{"sink": sys.stdout}])
     app.logger = logger
