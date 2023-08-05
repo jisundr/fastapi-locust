@@ -33,12 +33,6 @@ app = FastAPI()
 
 @app.get("/")
 def read_root():
-    app.logger.info("Hello World")
-    app.logger.error("Error World")
-    app.logger.warning("Warning World")
-    app.logger.debug("Debug World")
-    app.logger.critical("Critical World")
-
     return {"Hello": "World"}
 
 
